@@ -1,7 +1,12 @@
 import type { Filters, ListResponse, Notification } from './types'
 
+// import.meta.env.BASE_URL = '/' in dev, '/notifeed/' in production build
+const base = import.meta.env.BASE_URL.replace(/\/$/, '') // '/notifeed' or ''
+
+export const streamURL = `${base}/api/stream`
+
 async function req(method: string, path: string, body?: unknown) {
-  const res = await fetch(path, {
+  const res = await fetch(`${base}${path}`, {
     method,
     headers: body ? { 'Content-Type': 'application/json' } : {},
     body: body ? JSON.stringify(body) : undefined,

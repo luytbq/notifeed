@@ -5,6 +5,7 @@ import {
   logout,
   markAllRead,
   search as searchAPI,
+  streamURL,
 } from '../api'
 import type { Filters, Notification } from '../types'
 import { FilterBar } from './FilterBar'
@@ -62,7 +63,7 @@ export function FeedPage({ onLogout }: { onLogout: () => void }) {
 
   // SSE
   useEffect(() => {
-    const es = new EventSource('/api/stream', { withCredentials: true })
+    const es = new EventSource(streamURL, { withCredentials: true })
     es.addEventListener('notification', (e: MessageEvent) => {
       const n: Notification = JSON.parse(e.data)
       setItems(prev => [n, ...prev])

@@ -6,15 +6,15 @@
 set -e
 
 # Configuration
-SERVER_HOST="your-user@your-server"
+SERVER_HOST="root@luytbq.site"
 REMOTE_DIR="/opt/notifeed"
 LOG_DIR="/var/log/notifeed"
 SERVICE_NAME="notifeed"
 
-# Build frontend
+# Build frontend (APP_BASE_PATH để assets/API calls dùng đúng prefix)
 echo "Building frontend..."
 cd frontend
-npm run build
+APP_BASE_PATH=/notifeed npm run build
 cd ..
 
 # Build Linux binary
@@ -28,8 +28,12 @@ ssh $SERVER_HOST "sudo mkdir -p $REMOTE_DIR $LOG_DIR && sudo chown www-data:www-
 scp notifeed-server $SERVER_HOST:$REMOTE_DIR/
 scp notifeed.service $SERVER_HOST:/tmp/
 scp notifeed.logrotate $SERVER_HOST:/tmp/
+scp notifeed.nginx.conf $SERVER_HOST:/tmp/
 ssh $SERVER_HOST "sudo mv /tmp/notifeed.service /etc/systemd/system/"
 ssh $SERVER_HOST "sudo mv /tmp/notifeed.logrotate /etc/logrotate.d/notifeed"
+ssh $SERVER_HOST "sudo mv /tmp/notifeed.nginx.conf /etc/nginx/sites-available/notifeed \
+  && sudo ln -sf /etc/nginx/sites-available/notifeed /etc/nginx/sites-enabled/notifeed \
+  && sudo nginx -t && sudo systemctl reload nginx"
 ssh $SERVER_HOST "sudo chown -R www-data:www-data $REMOTE_DIR"
 
 # Upload config nếu chưa tồn tại trên server

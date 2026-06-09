@@ -1,7 +1,9 @@
 .PHONY: build frontend run dev
 
+APP_BASE_PATH ?= /
+
 frontend:
-	cd frontend && npm run build
+	cd frontend && APP_BASE_PATH=$(APP_BASE_PATH) npm run build
 
 build: frontend
 	GOTOOLCHAIN=local go build -tags fts5 -o notifeed-server ./cmd/server/
