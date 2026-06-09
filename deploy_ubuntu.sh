@@ -11,10 +11,10 @@ REMOTE_DIR="/opt/notifeed"
 LOG_DIR="/var/log/notifeed"
 SERVICE_NAME="notifeed"
 
-# Build frontend (APP_BASE_PATH để assets/API calls dùng đúng prefix)
+# Build frontend với base path /notifeed
 echo "Building frontend..."
 cd frontend
-APP_BASE_PATH=/notifeed npm run build
+npm run build -- --base /notifeed
 cd ..
 
 # Build Linux binary
