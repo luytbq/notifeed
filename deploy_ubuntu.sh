@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-SERVER_HOST="root@luytbq.site"
+SERVER_HOST="your-user@your-server"
 REMOTE_DIR="/opt/notifeed"
 LOG_DIR="/var/log/notifeed"
 SERVICE_NAME="notifeed"
