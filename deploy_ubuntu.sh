@@ -28,12 +28,8 @@ ssh $SERVER_HOST "sudo mkdir -p $REMOTE_DIR $LOG_DIR && sudo chown www-data:www-
 scp notifeed-server $SERVER_HOST:$REMOTE_DIR/
 scp notifeed.service $SERVER_HOST:/tmp/
 scp notifeed.logrotate $SERVER_HOST:/tmp/
-scp notifeed.nginx.conf $SERVER_HOST:/tmp/
 ssh $SERVER_HOST "sudo mv /tmp/notifeed.service /etc/systemd/system/"
 ssh $SERVER_HOST "sudo mv /tmp/notifeed.logrotate /etc/logrotate.d/notifeed"
-ssh $SERVER_HOST "sudo mv /tmp/notifeed.nginx.conf /etc/nginx/sites-available/notifeed \
-  && sudo ln -sf /etc/nginx/sites-available/notifeed /etc/nginx/sites-enabled/notifeed \
-  && sudo nginx -t && sudo systemctl reload nginx"
 ssh $SERVER_HOST "sudo chown -R www-data:www-data $REMOTE_DIR"
 
 # Upload config nếu chưa tồn tại trên server
