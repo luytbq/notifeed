@@ -1,0 +1,17 @@
+[Unit]
+Description=NotiFeed
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/notifeed
+ExecStart=/opt/notifeed/notifeed-server
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/notifeed/notifeed.log
+StandardError=append:/var/log/notifeed/notifeed.log
+
+[Install]
+WantedBy=multi-user.target

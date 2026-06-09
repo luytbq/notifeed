@@ -1,0 +1,10 @@
+/var/log/notifeed/notifeed.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 www-data www-data
+    copytruncate
+}

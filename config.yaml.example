@@ -1,0 +1,8 @@
+port: 8080
+password: changeme
+session_secret: change-this-to-a-random-secret
+db_file: notifeed.db
+
+clients:
+  - name: pns
+    secret: hmac-secret-here

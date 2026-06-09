@@ -1,0 +1,21 @@
+# Binary
+notifeed-server
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Config (chứa secrets — dùng config.yaml.example làm template)
+config.yaml
+
+# Frontend build output (được embed vào binary lúc build)
+web/dist/
+
+# Frontend dependencies
+frontend/node_modules/
+frontend/dist/
+
+# OS / editor
+.DS_Store
+*.swp
