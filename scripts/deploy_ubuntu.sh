@@ -5,8 +5,10 @@
 
 set -e
 
+cd "$(dirname "$0")/.."
+
 # Configuration
-SERVER_HOST="your-user@your-server"
+SERVER_HOST="${1:?Usage: $0 user@host}"
 REMOTE_DIR="/opt/notifeed"
 LOG_DIR="/var/log/notifeed"
 SERVICE_NAME="notifeed"

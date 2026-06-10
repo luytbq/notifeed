@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+cd "$(dirname "$0")/.."
+
 if [ ! -f config.yaml ]; then
   cp config.yaml.example config.yaml
   echo "Created config.yaml from example — edit it then re-run."
