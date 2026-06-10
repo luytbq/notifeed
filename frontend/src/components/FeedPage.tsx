@@ -171,14 +171,26 @@ export function FeedPage({ onLogout }: { onLogout: () => void }) {
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
-          <h1 className="text-lg font-semibold">
-            NotiFeed
-            {unreadCount > 0 && (
-              <span className="ml-2 bg-blue-600 text-white text-xs font-bold rounded-full px-2 py-0.5">
-                {unreadCount}
+          <div className="flex items-center gap-3 shrink-0">
+            <h1 className="text-lg font-semibold">
+              NotiFeed
+              {unreadCount > 0 && (
+                <span className="ml-2 bg-blue-600 text-white text-xs font-bold rounded-full px-2 py-0.5">
+                  {unreadCount}
+                </span>
+              )}
+            </h1>
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400" title={`Connection status: ${connStatus}`}>
+              <div className={`w-2.5 h-2.5 rounded-full ${
+                connStatus === 'connected' ? 'bg-green-500' :
+                connStatus === 'reconnecting' ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'
+              }`} />
+              <span className="hidden sm:inline font-normal">
+                {connStatus === 'connected' ? 'Connected' :
+                 connStatus === 'reconnecting' ? 'Reconnecting…' : 'Disconnected'}
               </span>
-            )}
-          </h1>
+            </div>
+          </div>
 
           {/* Search */}
           <input
@@ -220,18 +232,6 @@ export function FeedPage({ onLogout }: { onLogout: () => void }) {
         </div>
       </header>
 
-      {/* Connection status banner */}
-      {connStatus !== 'connected' && (
-        <div className={`sticky top-[73px] z-10 text-center text-xs py-1.5 font-medium ${
-          connStatus === 'reconnecting'
-            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-        }`}>
-          {connStatus === 'reconnecting'
-            ? '⟳ Reconnecting to server…'
-            : '✕ Disconnected — retrying…'}
-        </div>
-      )}
 
       {/* Feed */}
       <main className="max-w-3xl mx-auto px-4 py-4 space-y-2">
