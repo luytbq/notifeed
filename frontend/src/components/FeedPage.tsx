@@ -115,11 +115,13 @@ export function FeedPage({ onLogout }: { onLogout: () => void }) {
 
   function handleMarkRead(id: string) {
     setItems(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
+    setSearchResults(prev => prev ? prev.map(n => n.id === id ? { ...n, is_read: true } : n) : null)
     setUnreadCount(c => Math.max(0, c - 1))
   }
 
   function handleDelete(id: string) {
     setItems(prev => prev.filter(n => n.id !== id))
+    setSearchResults(prev => prev ? prev.filter(n => n.id !== id) : null)
   }
 
   const displayItems = searchResults ?? items
