@@ -8,7 +8,8 @@ export default function App() {
   const [state, setState] = useState<State>('loading')
 
   useEffect(() => {
-    fetch('/api/notifications?limit=1', { credentials: 'include' })
+    const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+    fetch(`${base}/api/notifications?limit=1`, { credentials: 'include' })
       .then(r => setState(r.ok ? 'feed' : 'login'))
       .catch(() => setState('login'))
   }, [])
