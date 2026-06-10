@@ -113,15 +113,13 @@ export function FeedPage({ onLogout }: { onLogout: () => void }) {
     onLogout()
   }
 
-  function handleUpdate() {
-    // Refresh the list after mark-read or delete
-    const run = async () => {
-      const data = await listNotifications(filters)
-      setItems(data.items)
-      setCursor(data.next_cursor)
-      setHasMore(!!data.next_cursor)
-    }
-    run()
+  function handleMarkRead(id: string) {
+    setItems(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
+    setUnreadCount(c => Math.max(0, c - 1))
+  }
+
+  function handleDelete(id: string) {
+    setItems(prev => prev.filter(n => n.id !== id))
   }
 
   const displayItems = searchResults ?? items
@@ -153,17 +151,17 @@ export function FeedPage({ onLogout }: { onLogout: () => void }) {
           <div className="flex gap-2 shrink-0">
             <button
               onClick={handleMarkAllRead}
-              className="px-3 py-1.5 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              title="Mark all as read"
+              className="px-3 py-1.5 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors whitespace-nowrap"
+              title="Mark all notifications as read"
             >
-              ✓ All
+              ✓ Mark all read
             </button>
             <button
               onClick={handleDeleteRead}
-              className="px-3 py-1.5 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-red-100 dark:hover:bg-red-900 transition-colors"
-              title="Delete read"
+              className="px-3 py-1.5 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-red-100 dark:hover:bg-red-900 transition-colors whitespace-nowrap"
+              title="Delete all read notifications"
             >
-              🗑 Read
+              🗑 Delete read
             </button>
             <button
               onClick={handleLogout}
@@ -182,20 +180,26 @@ export function FeedPage({ onLogout }: { onLogout: () => void }) {
 
       {/* Feed */}
       <main className="max-w-3xl mx-auto px-4 py-4 space-y-2">
-        {searchResults !== null && (
+        {searchResults !== null && searchResults.length > 0 && (
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for "{searchQuery}"
+            {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for &ldquo;{searchQuery}&rdquo;
           </p>
         )}
 
         {displayItems.length === 0 && !loading && (
           <div className="text-center py-20 text-gray-400 dark:text-gray-500">
-            {searchResults !== null ? 'No results' : 'No notifications'}
+            {searchResults !== null
+              ? `No results for "${searchQuery}"`
+              : filters.is_read === '0'
+                ? '✓ All caught up — no unread notifications'
+                : (filters.level || filters.source)
+                  ? 'No notifications match your filters'
+                  : 'No notifications yet'}
           </div>
         )}
 
         {displayItems.map(item => (
-          <NotificationItem key={item.id} item={item} onUpdate={handleUpdate} />
+          <NotificationItem key={item.id} item={item} onMarkRead={handleMarkRead} onDelete={handleDelete} />
         ))}
 
         {/* Infinite scroll sentinel */}

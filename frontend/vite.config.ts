@@ -10,8 +10,8 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:8080',
-      '/webhook': 'http://localhost:8080',
+      '/api': 'http://localhost:10099',
+      '/webhook': 'http://localhost:10099',
     },
   },
 })
