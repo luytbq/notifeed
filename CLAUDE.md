@@ -13,7 +13,7 @@ make build                        # base path /notifeed (default)
 make build BASE_PATH=/other-path
 
 # Run backend only (requires frontend already built)
-go run -tags fts5 ./cmd/server/
+go run ./cmd/server/
 
 # Frontend only (Vite dev server at :5173)
 cd frontend && npm run dev
@@ -28,7 +28,7 @@ go run ./tool/send_test/ -bulk                  # 12 varied notifications
 ./scripts/deploy_ubuntu.sh user@host
 ```
 
-**Important build constraint:** Go must be built with `-tags fts5` — the SQLite FTS5 extension is required for search. Omitting it causes a runtime failure.
+The SQLite driver is `modernc.org/sqlite` (pure Go, FTS5 built in) — no cgo needed, so cross-compiling for Linux deploys works out of the box.
 
 The `CONFIG_FILE` env var overrides the default `config.yaml` path.
 

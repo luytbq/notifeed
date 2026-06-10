@@ -21,7 +21,7 @@ cd ..
 
 # Build Linux binary
 echo "Building Linux binary..."
-GOOS=linux GOARCH=amd64 GOTOOLCHAIN=local go build -tags fts5 -ldflags="-s -w" -o notifeed-server ./cmd/server/
+GOOS=linux GOARCH=amd64 GOTOOLCHAIN=local go build -ldflags="-s -w" -o notifeed-server ./cmd/server/
 
 # Deploy
 echo "Deploying to $SERVER_HOST..."

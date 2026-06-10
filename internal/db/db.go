@@ -4,11 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 func Open(dbFile string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", dbFile+"?_journal_mode=WAL&_foreign_keys=on")
+	// busy_timeout mirrors the 5s default of the previous cgo driver
+	db, err := sql.Open("sqlite", dbFile+"?_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)&_pragma=busy_timeout(5000)")
 	if err != nil {
 		return nil, fmt.Errorf("open sqlite: %w", err)
 	}

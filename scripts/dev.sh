@@ -12,7 +12,7 @@ fi
 PORT=$(grep '^port:' config.yaml | awk '{print $2}')
 PORT=${PORT:-8080}
 
-go run -tags fts5 ./cmd/server/ &
+go run ./cmd/server/ &
 BACKEND_PID=$!
 
 cd frontend && npm run dev &
