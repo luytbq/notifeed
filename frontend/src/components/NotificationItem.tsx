@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Notification } from '../types'
 import { markRead, deleteOne } from '../api'
+import { XIcon } from './icons'
 
 const levelBadge: Record<string, string> = {
   info: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
@@ -58,10 +59,10 @@ export function NotificationItem({
   return (
     <div
       onClick={handleClick}
-      className={`relative group flex rounded-lg overflow-hidden border cursor-pointer transition-colors ${
+      className={`relative group flex rounded-lg overflow-hidden border cursor-pointer transition-colors animate-[item-in_0.18s_ease-out] ${
         item.is_read
-          ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 opacity-60'
-          : 'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950'
+          ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 opacity-60 hover:opacity-80'
+          : 'border-blue-200 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-950/40 hover:dark:bg-blue-950/60'
       }`}
     >
       {/* Level accent bar */}
@@ -73,18 +74,18 @@ export function NotificationItem({
 
       <div className="flex-1 min-w-0 p-4 pr-8">
         <div className="flex items-center gap-2 flex-wrap mb-1">
-          <span className={`text-xs px-2 py-0.5 rounded-full ${levelBadge[item.level] ?? levelBadge.info}`}>
+          <span className={`text-[10px] font-mono font-medium uppercase tracking-wider px-2 py-0.5 rounded-full ${levelBadge[item.level] ?? levelBadge.info}`}>
             {item.level}
           </span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">{item.source}</span>
+          <span className="text-xs font-mono text-gray-500 dark:text-gray-400">{item.source}</span>
           {item.origin && item.origin !== item.source && (
-            <span className="text-xs text-gray-400 dark:text-gray-500">· {item.origin}</span>
+            <span className="text-xs font-mono text-gray-400 dark:text-gray-500">· {item.origin}</span>
           )}
         </div>
         <p className={`font-medium text-gray-900 dark:text-white ${expanded ? '' : 'truncate'}`}>{item.title}</p>
         <p className={`text-sm text-gray-600 dark:text-gray-300 mt-0.5 ${expanded ? '' : 'line-clamp-2'}`}>{item.message}</p>
         <p
-          className="text-xs text-gray-400 dark:text-gray-500 mt-1"
+          className="text-xs font-mono text-gray-400 dark:text-gray-500 mt-1"
           title={new Date(item.created_at).toLocaleString()}
         >
           {formatTime(item.created_at)}
@@ -93,10 +94,10 @@ export function NotificationItem({
 
       <button
         onClick={handleDelete}
-        className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 shrink-0 self-start mt-3 mr-2 px-1"
+        className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 shrink-0 self-start mt-3 mr-2 p-1 rounded"
         title="Delete"
       >
-        ✕
+        <XIcon className="w-3.5 h-3.5" />
       </button>
     </div>
   )
