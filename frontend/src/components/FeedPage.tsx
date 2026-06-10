@@ -11,6 +11,15 @@ import type { Filters, Notification } from '../types'
 import { FilterBar } from './FilterBar'
 import { NotificationItem } from './NotificationItem'
 
+type ConnStatus = 'connected' | 'reconnecting' | 'disconnected'
+
+const notificationAudio = new Audio(`${import.meta.env.BASE_URL.replace(/\/?$/, '')}/notification.mp3`)
+
+function playNotificationSound() {
+  notificationAudio.currentTime = 0
+  notificationAudio.play().catch(() => {})
+}
+
 export function FeedPage({ onLogout }: { onLogout: () => void }) {
   const [items, setItems] = useState<Notification[]>([])
   const [cursor, setCursor] = useState<string>('')
@@ -20,6 +29,7 @@ export function FeedPage({ onLogout }: { onLogout: () => void }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Notification[] | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [connStatus, setConnStatus] = useState<ConnStatus>('connected')
   const loaderRef = useRef<HTMLDivElement>(null)
 
   const load = useCallback(
@@ -61,15 +71,45 @@ export function FeedPage({ onLogout }: { onLogout: () => void }) {
     setUnreadCount(items.filter(n => !n.is_read).length)
   }, [items])
 
-  // SSE
+  // SSE with reconnect
   useEffect(() => {
-    const es = new EventSource(streamURL, { withCredentials: true })
-    es.addEventListener('notification', (e: MessageEvent) => {
-      const n: Notification = JSON.parse(e.data)
-      setItems(prev => [n, ...prev])
-      setUnreadCount(c => c + 1)
-    })
-    return () => es.close()
+    let es: EventSource
+    let retryCount = 0
+    let retryTimer: ReturnType<typeof setTimeout>
+    let destroyed = false
+
+    function connect() {
+      es = new EventSource(streamURL, { withCredentials: true })
+
+      es.addEventListener('open', () => {
+        setConnStatus('connected')
+        retryCount = 0
+      })
+
+      es.addEventListener('notification', (e: MessageEvent) => {
+        const n: Notification = JSON.parse(e.data)
+        setItems(prev => [n, ...prev])
+        setUnreadCount(c => c + 1)
+        playNotificationSound()
+      })
+
+      es.onerror = () => {
+        es.close()
+        if (destroyed) return
+        setConnStatus(retryCount === 0 ? 'reconnecting' : 'disconnected')
+        const delay = Math.min(1000 * 2 ** retryCount, 30_000)
+        retryCount++
+        retryTimer = setTimeout(connect, delay)
+      }
+    }
+
+    connect()
+
+    return () => {
+      destroyed = true
+      clearTimeout(retryTimer)
+      es?.close()
+    }
   }, [])
 
   // Infinite scroll
@@ -179,6 +219,19 @@ export function FeedPage({ onLogout }: { onLogout: () => void }) {
           <FilterBar filters={filters} onChange={f => { setFilters(f); setSearchQuery('') }} />
         </div>
       </header>
+
+      {/* Connection status banner */}
+      {connStatus !== 'connected' && (
+        <div className={`sticky top-[73px] z-10 text-center text-xs py-1.5 font-medium ${
+          connStatus === 'reconnecting'
+            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+        }`}>
+          {connStatus === 'reconnecting'
+            ? '⟳ Reconnecting to server…'
+            : '✕ Disconnected — retrying…'}
+        </div>
+      )}
 
       {/* Feed */}
       <main className="max-w-3xl mx-auto px-4 py-4 space-y-2">

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Notification } from '../types'
 import { markRead, deleteOne } from '../api'
 
@@ -38,10 +39,14 @@ export function NotificationItem({
   onMarkRead: (id: string) => void
   onDelete: (id: string) => void
 }) {
-  async function handleMarkRead() {
-    if (item.is_read) return
-    await markRead(item.id)
-    onMarkRead(item.id)
+  const [expanded, setExpanded] = useState(false)
+
+  async function handleClick() {
+    setExpanded(e => !e)
+    if (!item.is_read) {
+      await markRead(item.id)
+      onMarkRead(item.id)
+    }
   }
 
   async function handleDelete(e: React.MouseEvent) {
@@ -52,7 +57,7 @@ export function NotificationItem({
 
   return (
     <div
-      onClick={handleMarkRead}
+      onClick={handleClick}
       className={`relative group flex rounded-lg overflow-hidden border cursor-pointer transition-colors ${
         item.is_read
           ? 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 opacity-60'
@@ -76,8 +81,8 @@ export function NotificationItem({
             <span className="text-xs text-gray-400 dark:text-gray-500">· {item.origin}</span>
           )}
         </div>
-        <p className="font-medium text-gray-900 dark:text-white truncate">{item.title}</p>
-        <p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5 line-clamp-2">{item.message}</p>
+        <p className={`font-medium text-gray-900 dark:text-white ${expanded ? '' : 'truncate'}`}>{item.title}</p>
+        <p className={`text-sm text-gray-600 dark:text-gray-300 mt-0.5 ${expanded ? '' : 'line-clamp-2'}`}>{item.message}</p>
         <p
           className="text-xs text-gray-400 dark:text-gray-500 mt-1"
           title={new Date(item.created_at).toLocaleString()}
