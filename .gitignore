@@ -1,5 +1,6 @@
 # Binary
 notifeed-server
+send_test
 
 # Database
 *.db
