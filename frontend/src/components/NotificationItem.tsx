@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Notification } from '../types'
 import { markRead, deleteOne } from '../api'
 import { XIcon } from './icons'
@@ -34,13 +34,25 @@ export function NotificationItem({
   onDelete: (id: string) => void
 }) {
   const [expanded, setExpanded] = useState(false)
+  const [clamped, setClamped] = useState(false)
+  const msgRef = useRef<HTMLParagraphElement>(null)
+
+  useEffect(() => {
+    const el = msgRef.current
+    if (!el) return
+    setClamped(el.scrollHeight > el.clientHeight)
+  }, [item.message])
 
   async function handleClick() {
-    setExpanded(e => !e)
     if (!item.is_read) {
       await markRead(item.id)
       onMarkRead(item.id)
     }
+  }
+
+  function handleToggleExpand(e: React.MouseEvent) {
+    e.stopPropagation()
+    setExpanded(v => !v)
   }
 
   async function handleDelete(e: React.MouseEvent) {
@@ -76,7 +88,20 @@ export function NotificationItem({
           )}
         </div>
         <p className={`font-medium text-gray-900 dark:text-white ${expanded ? '' : 'truncate'}`}>{item.title}</p>
-        <p className={`text-sm text-gray-600 dark:text-gray-300 mt-0.5 ${expanded ? '' : 'line-clamp-2'}`}>{item.message}</p>
+        <p
+          ref={msgRef}
+          className={`text-sm text-gray-600 dark:text-gray-300 mt-0.5 ${expanded ? '' : 'line-clamp-2'}`}
+        >
+          {item.message}
+        </p>
+        {(clamped || expanded) && (
+          <button
+            onClick={handleToggleExpand}
+            className="mt-1 text-xs text-blue-500 hover:text-blue-400 select-none"
+          >
+            {expanded ? 'Show less' : 'Show more'}
+          </button>
+        )}
         <p
           className="text-xs font-mono text-gray-400 dark:text-gray-500 mt-1"
           title={new Date(item.created_at).toLocaleString()}
