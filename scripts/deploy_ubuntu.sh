@@ -1,55 +1,63 @@
 #!/bin/bash
 #
 # Deploy NotiFeed to Ubuntu Server
+# Usage: ./scripts/deploy_ubuntu.sh user@host
 #
 
-set -e
+set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-# Configuration
 SERVER_HOST="${1:?Usage: $0 user@host}"
 REMOTE_DIR="/opt/notifeed"
 LOG_DIR="/var/log/notifeed"
 SERVICE_NAME="notifeed"
 
-# Build frontend với base path /notifeed
-echo "Building frontend..."
-cd frontend
-npm run build -- --base /notifeed
-cd ..
+# Build
+echo "==> Building frontend..."
+cd frontend && npm run build -- --base /notifeed && cd ..
 
-# Build Linux binary
-echo "Building Linux binary..."
-GOOS=linux GOARCH=amd64 GOTOOLCHAIN=local go build -ldflags="-s -w" -o notifeed-server ./cmd/server/
+echo "==> Building Linux binary..."
+GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o notifeed-server ./cmd/server/
 
-# Deploy
-echo "Deploying to $SERVER_HOST..."
-ssh $SERVER_HOST "sudo systemctl stop $SERVICE_NAME 2>/dev/null || true"
-ssh $SERVER_HOST "sudo mkdir -p $REMOTE_DIR $LOG_DIR && sudo chown www-data:www-data $LOG_DIR"
-scp notifeed-server $SERVER_HOST:$REMOTE_DIR/
-scp notifeed.service $SERVER_HOST:/tmp/
-scp notifeed.logrotate $SERVER_HOST:/tmp/
-ssh $SERVER_HOST "sudo mv /tmp/notifeed.service /etc/systemd/system/"
-ssh $SERVER_HOST "sudo mv /tmp/notifeed.logrotate /etc/logrotate.d/notifeed"
-ssh $SERVER_HOST "sudo chown -R www-data:www-data $REMOTE_DIR"
+# Upload binary + service files
+echo "==> Uploading files to $SERVER_HOST..."
+scp -q notifeed-server "$SERVER_HOST:/tmp/notifeed-server"
+scp -q notifeed.service notifeed.logrotate "$SERVER_HOST:/tmp/"
 
-# Upload config nếu chưa tồn tại trên server
-if ! ssh $SERVER_HOST "test -f $REMOTE_DIR/config.yaml"; then
-    echo "config.yaml not found on server — uploading config.yaml.example as template..."
-    scp config.yaml.example $SERVER_HOST:$REMOTE_DIR/config.yaml
-    echo "  !! Nhớ chỉnh config.yaml trên server trước khi start service !!"
+# Remote setup (single SSH session)
+ssh "$SERVER_HOST" bash -s <<EOF
+set -e
+
+sudo systemctl stop $SERVICE_NAME 2>/dev/null || true
+
+sudo mkdir -p $REMOTE_DIR $LOG_DIR
+sudo chown www-data:www-data $LOG_DIR
+
+sudo mv /tmp/notifeed-server $REMOTE_DIR/notifeed-server
+sudo chmod 755 $REMOTE_DIR/notifeed-server
+sudo chown www-data:www-data $REMOTE_DIR/notifeed-server
+
+sudo mv /tmp/notifeed.service /etc/systemd/system/
+sudo mv /tmp/notifeed.logrotate /etc/logrotate.d/notifeed
+
+sudo systemctl daemon-reload
+sudo systemctl enable $SERVICE_NAME
+sudo systemctl restart $SERVICE_NAME
+EOF
+
+# Upload config if not present (after service starts to avoid chown race)
+if ! ssh "$SERVER_HOST" "test -f $REMOTE_DIR/config.yaml"; then
+    echo "==> config.yaml not found — uploading template..."
+    scp -q config.yaml.example "$SERVER_HOST:$REMOTE_DIR/config.yaml"
+    ssh "$SERVER_HOST" "sudo chown www-data:www-data $REMOTE_DIR/config.yaml"
+    echo "    !! Edit $REMOTE_DIR/config.yaml on the server then restart the service !!"
 fi
 
-# Install and start service
-echo "Starting service..."
-ssh $SERVER_HOST "sudo systemctl daemon-reload && sudo systemctl enable $SERVICE_NAME && sudo systemctl restart $SERVICE_NAME"
-
-# Cleanup
 rm -f notifeed-server
 
 echo ""
 echo "Done!"
 echo "  Status : ssh $SERVER_HOST 'sudo systemctl status $SERVICE_NAME'"
-echo "  Logs   : ssh $SERVER_HOST 'tail -f $LOG_DIR/notifeed.log'"
+echo "  Logs   : ssh $SERVER_HOST 'sudo tail -f $LOG_DIR/notifeed.log'"
 echo "  Config : ssh $SERVER_HOST 'sudo nano $REMOTE_DIR/config.yaml'"
