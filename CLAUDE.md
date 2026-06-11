@@ -57,8 +57,8 @@ Webhook source
 
 - **`App.tsx`** — Bootstraps auth state by probing `/api/notifications?limit=1`. Three states: `loading`, `login`, `feed`.
 - **`api.ts`** — All fetch calls. In dev, `BASE_URL` is `/` so paths become bare `/api/...`; in production build it becomes `/notifeed` and prepends to all paths.
-- **`FeedPage.tsx`** — Main state owner: `items` (paginated list), `searchResults` (null when not searching), `filters`, `unreadCount`. SSE events prepend directly to `items`. Mark-read and delete update both `items` and `searchResults` in-place — no re-fetch — to avoid list reordering.
-- **`NotificationItem.tsx`** — Renders one card. Level accent bar is a `w-1` div (not CSS border) to avoid `border-color` shorthand override issues with Tailwind.
+- **`FeedPage.tsx`** — Main state owner: `items` (paginated list), `searchResults` (null when not searching), `filters`, `unreadCount`, `connStatus`. SSE events prepend directly to `items` and play a notification sound (`public/notification.mp3`). SSE uses manual reconnect with exponential backoff (1s→30s max); a sticky banner appears when disconnected. Mark-read and delete update both `items` and `searchResults` in-place — no re-fetch — to avoid list reordering.
+- **`NotificationItem.tsx`** — Renders one card. Level accent bar is a `w-1` div (not CSS border) to avoid `border-color` shorthand override issues with Tailwind. Long messages are clamped to 2 lines; a "Show more / Show less" button appears (detected via `scrollHeight > clientHeight`) to expand inline without interfering with text selection.
 
 ### Webhook payload format
 
@@ -78,4 +78,4 @@ Signature header: `X-PNS-Signature: sha256=<hmac-hex>`
 
 ## Dev proxy
 
-`frontend/vite.config.ts` proxies `/api` and `/webhook` to `http://localhost:10099`. If `config.yaml` uses a different port, update the proxy accordingly.
+`frontend/vite.config.ts` proxies `/api` and `/webhook` to `http://localhost:8080`. The port matches the default in `config.yaml`; if you change the port there, update the proxy accordingly.
