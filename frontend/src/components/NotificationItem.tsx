@@ -90,7 +90,7 @@ export function NotificationItem({
         <p className={`font-medium text-gray-900 dark:text-white ${expanded ? '' : 'truncate'}`}>{item.title}</p>
         <p
           ref={msgRef}
-          className={`text-sm text-gray-600 dark:text-gray-300 mt-0.5 ${expanded ? '' : 'line-clamp-2'}`}
+          className={`text-sm text-gray-600 dark:text-gray-300 mt-0.5 whitespace-pre-line ${expanded ? '' : 'line-clamp-2'}`}
         >
           {item.message}
         </p>
